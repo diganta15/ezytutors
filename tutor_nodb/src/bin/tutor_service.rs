@@ -10,7 +10,7 @@ use std::sync::Mutex;
 // mod state;
 
 
-use tutor_nodb::routes::general_routes;
+use tutor_nodb::routes::{course_routes, general_routes};
 use tutor_nodb::state::AppState;
 
 
@@ -26,6 +26,7 @@ let app = move || {
     App::new()
         .app_data(shared_data.clone())
         .configure(general_routes)
+        .configure(course_routes)
 };
 
 HttpServer::new(app).bind("127.0.0.1:3000")?.run().await
