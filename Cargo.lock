@@ -1223,7 +1223,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "tutor-nodb"
+name = "tutor_nodb"
 version = "0.1.0"
 dependencies = [
  "actix-rt",
