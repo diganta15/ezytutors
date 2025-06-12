@@ -7,6 +7,8 @@ default-run="tutor_service"
 [dependencies]
 actix-rt = "2.10.0"
 actix-web = "4.11.0"
+serde = {version="1.0.110", features=["derive"]}
+chrono = {version="0.4.11", features=["serde"]}
 
 [[bin]]
 name = "basic_server"
