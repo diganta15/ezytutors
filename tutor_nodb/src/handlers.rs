@@ -37,25 +37,45 @@ pub async fn new_course(
 }
 
 pub async fn get_courses_for_tutor(
-    app_state:web::Data<AppState>,
-    params:web::Path<i32>
-) -> HttpResponse{
-    let tutor_id:i32  = params.into_inner();
+    app_state: web::Data<AppState>,
+    params: web::Path<i32>
+) -> HttpResponse {
+    let tutor_id: i32 = params.into_inner();
 
-    let filtered_courses = app_state
-            .courses
-            .lock()
-            .unwrap()
-            .clone()
-            .into_iter()
-            .filter(|course| course.tutor_id == tutor_id)
-            .collect::<Vec<Course>>();
+    let filtered_courses = app_state.courses
+        .lock()
+        .unwrap()
+        .clone()
+        .into_iter()
+        .filter(|course| course.tutor_id == tutor_id)
+        .collect::<Vec<Course>>();
 
-        if filtered_courses.len()>0{
-            HttpResponse::Ok().json(filtered_courses)
-        }else {
-            HttpResponse::Ok().json("No course found for tutor".to_string())
-        }
+    if filtered_courses.len() > 0 {
+        HttpResponse::Ok().json(filtered_courses)
+    } else {
+        HttpResponse::Ok().json("No course found for tutor".to_string())
+    }
+}
+
+pub async fn get_course_detail(
+    app_state: web::Data<AppState>,
+    params: web::Path<(i32, i32)>
+) -> HttpResponse {
+    let (tutor_id, course_id) = params.into_inner();
+
+    let selected_course = app_state.courses
+        .lock()
+        .unwrap()
+        .clone()
+        .into_iter()
+        .find(|x| x.tutor_id == tutor_id && x.course_id == Some(course_id))
+        .ok_or("Course not found");
+
+    if let Ok(course) = selected_course {
+        HttpResponse::Ok().json(course)
+    } else {
+        HttpResponse::Ok().json("Course not found".to_string())
+    }
 }
 
 #[cfg(test)]
@@ -80,6 +100,17 @@ mod tests {
         });
 
         let resp = new_course(course, app_state).await;
-        assert_eq!(resp.status(),StatusCode::OK)
+        assert_eq!(resp.status(), StatusCode::OK)
+    }
+
+    async fn get_one_course_success() {
+        let app_state: web::Data<AppState> = web::Data::new(AppState {
+            health_check_response: "".to_string(),
+            visit_count: Mutex::new(0),
+            courses: Mutex::new(vec![]) });
+
+            let params:web::Path<(i32,i32)> = web::Path::from((1,1));
+            let resp = get_course_detail(app_state, params).await;
+            assert_eq!(resp.status(),StatusCode::OK);
     }
 }
